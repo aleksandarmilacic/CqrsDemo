@@ -91,5 +91,16 @@ namespace CqrsDemo.Api.Controllers
             await _mediator.Send(new DeleteOrderCommand { Id = id });
             return NoContent();
         }
+
+
+        [HttpPost]
+        [Route("calculate-discount")]
+        [ProducesResponseType(typeof(decimal), 200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> CalculateDiscount([FromBody] CalculateDiscountCommand command)
+        {
+            var discount = await _mediator.Send(command);
+            return Ok(discount);
+        }
     }
 }
