@@ -1,4 +1,5 @@
-﻿using CqrsDemo.Domain.Entities;
+﻿using CqrsDemo.Application.DTOs;
+using CqrsDemo.Domain.Entities;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Queries
 {
-    public class GetOrderByIdQuery : IRequest<Order>
+    public class GetOrderByIdQuery : IRequest<OrderDTO>
     {
         public Guid Id { get; set; }
     }

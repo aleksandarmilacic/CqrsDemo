@@ -1,9 +1,10 @@
-﻿using CqrsDemo.Domain.Entities;
+﻿using CqrsDemo.Application.DTOs;
+using CqrsDemo.Domain.Entities;
 using MediatR;
 
 namespace CqrsDemo.Application.Commands
 {
-    public class UpdateOrderCommand : IRequest<Order>
+    public class UpdateOrderCommand : IRequest<OrderDTO>
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

@@ -21,8 +21,10 @@ namespace CqrsDemo.Application.Handlers
             {
                 return Unit.Value; // Return Unit.Value when no action is performed
             }
-
+            
+            // in reality this would be a soft delete
             _context.Orders.Remove(order);
+
             await _context.SaveChangesAsync(cancellationToken);
 
             return Unit.Value; // Always return Unit.Value for void-like responses

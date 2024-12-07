@@ -1,4 +1,5 @@
 using CqrsDemo.Application.Commands;
+using CqrsDemo.Application.DTOs;
 using CqrsDemo.Application.Queries;
 using CqrsDemo.Domain.Entities;
 using MediatR;
@@ -24,7 +25,7 @@ namespace CqrsDemo.Api.Controllers
         /// <returns>The created order.</returns>
         [HttpPost]
         [Route("")]
-        [ProducesResponseType(typeof(Order), 201)]
+        [ProducesResponseType(typeof(OrderDTO), 201)]
         public async Task<IActionResult> Create([FromBody] CreateOrderCommand command)
         {
             var createdOrder = await _mediator.Send(command);
@@ -38,7 +39,7 @@ namespace CqrsDemo.Api.Controllers
         /// <returns>The order details.</returns>
         [HttpGet]
         [Route("{id:guid}")]
-        [ProducesResponseType(typeof(Order), 200)]
+        [ProducesResponseType(typeof(OrderDTO), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -53,7 +54,7 @@ namespace CqrsDemo.Api.Controllers
         /// <returns>A list of all orders.</returns>
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(IEnumerable<Order>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<OrderDTO>), 200)]
         public async Task<IActionResult> GetAll()
         {
             var orders = await _mediator.Send(new GetAllOrdersQuery());
@@ -68,7 +69,7 @@ namespace CqrsDemo.Api.Controllers
         /// <returns>The updated order.</returns>
         [HttpPut]
         [Route("{id:guid}")]
-        [ProducesResponseType(typeof(Order), 200)]
+        [ProducesResponseType(typeof(OrderDTO), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOrderCommand command)
         {

@@ -1,4 +1,6 @@
-﻿using CqrsDemo.Application.Commands;
+﻿using AutoMapper;
+using CqrsDemo.Application.Commands;
+using CqrsDemo.Application.DTOs;
 using CqrsDemo.Domain.Entities;
 using CqrsDemo.Infrastructure.Persistence;
 using MediatR;
@@ -10,21 +12,23 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Handlers
 {
-    public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
+    public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderDTO>
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext _context; 
+        private readonly IMapper _mapper;
 
-        public CreateOrderHandler(AppDbContext context)
+        public CreateOrderHandler(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Order> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+        public async Task<OrderDTO> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
             var order = new Order(request.Name, request.Price);
             _context.Orders.Add(order);
             await _context.SaveChangesAsync(cancellationToken);
-            return order;
+            return _mapper.Map<OrderDTO>(order);
         }
     }
 }

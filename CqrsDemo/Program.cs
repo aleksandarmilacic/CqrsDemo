@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using MediatR;
-using System;
 using CqrsDemo.Infrastructure.Persistence;
 using CqrsDemo.Application;
 using CqrsDemo.Domain.Entities;
+using CqrsDemo.Application.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +11,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddApplication();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); 
+builder.Services.AddSwaggerGen();
+// Register Automapper
+builder.Services.AddAutoMapper(typeof(OrderMapping));
 
 var app = builder.Build();
 
