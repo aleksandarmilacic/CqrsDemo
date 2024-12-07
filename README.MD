@@ -25,7 +25,7 @@ This project demonstrates CQRS (Command Query Responsibility Segregation) and Do
 ## Installation and Setup
 
 1. Clone the repository:
-   git clone https://github.com/your-repo/cqrs-demo-api.git
+   git clone https://github.com/aleksandarmilacic/CqrsDemo.git
    cd cqrs-demo-api
 
 2. Build and run locally:
