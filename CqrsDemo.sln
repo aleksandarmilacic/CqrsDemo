@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CqrsDemo.Infrastructure", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{050216DD-FBC8-4906-835E-6ED99DB0CD1D}"
 	ProjectSection(SolutionItems) = preProject
-		README.ME = README.ME
+		README.MD = README.MD
 	EndProjectSection
 EndProject
 Global
