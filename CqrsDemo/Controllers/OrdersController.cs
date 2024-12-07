@@ -4,7 +4,7 @@ using CqrsDemo.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CqrsDemo.Controllers
+namespace CqrsDemo.Api.Controllers
 {
     [ApiController]
     [Route("api/orders")]
@@ -83,7 +83,7 @@ namespace CqrsDemo.Controllers
         /// </summary>
         /// <param name="id">The ID of the order to delete.</param>
         /// <returns>No content.</returns>
-        [HttpDelete("{id}")]
+        [HttpDelete]
         [Route("{id:guid}")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> Delete(Guid id)

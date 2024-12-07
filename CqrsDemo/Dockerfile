@@ -13,6 +13,9 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CqrsDemo/CqrsDemo.Api.csproj", "CqrsDemo/"]
+COPY ["CqrsDemo.Application/CqrsDemo.Application.csproj", "CqrsDemo.Application/"]
+COPY ["CqrsDemo.Domain/CqrsDemo.Domain.csproj", "CqrsDemo.Domain/"]
+COPY ["CqrsDemo.Infrastructure/CqrsDemo.Infrastructure.csproj", "CqrsDemo.Infrastructure/"]
 RUN dotnet restore "./CqrsDemo/CqrsDemo.Api.csproj"
 COPY . .
 WORKDIR "/src/CqrsDemo"
