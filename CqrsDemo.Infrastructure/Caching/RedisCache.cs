@@ -33,6 +33,14 @@ namespace CqrsDemo.Infrastructure.Caching
             return string.IsNullOrEmpty(serializedValue) ? default : JsonSerializer.Deserialize<T>(serializedValue);
         }
 
+        public async Task<bool> DeleteAsync(string key)
+        {
+            var db = _redis.GetDatabase();
+            var serializedValue = await db.StringGetAsync(key);
+            return 0 == await db.ListRemoveAsync(key, serializedValue, 0); 
+        }
+
+
         public async Task<IEnumerable<T>> GetAllAsync<T>(string pattern = "*")
         {
             var db = _redis.GetDatabase();

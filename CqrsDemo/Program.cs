@@ -11,17 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("OrderDb"));
 
-// Add the Redis cache
+// Register Redis cache as a singleton
 builder.Services.AddSingleton<RedisCache>();
 
-// Add the RabbitMQ 
+// Register RabbitMQConnectionManager as a singleton
 builder.Services.AddSingleton<RabbitMQConnectionManager>();
 
-// Add the RabbitMQ consumer as a hosted service
+// Register RabbitMQPublisher as a singleton
+builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
+
+// Register RabbitMQConsumerService as a hosted service
 builder.Services.AddHostedService<RabbitMQConsumerService>();
 
-// Add application-level messaging service
-builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
 
 
 builder.Services.AddApplication();

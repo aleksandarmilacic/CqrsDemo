@@ -29,8 +29,8 @@ namespace CqrsDemo.Infrastructure.Messaging
             var queues = new List<(string QueueName, string ExchangeName, string RoutingKey)>
             {
                 ("order-processing-queue", "order-exchange", "order.created"),
-                ("payment-processing-queue", "payment-exchange", "payment.completed"),
-                ("reporting-queue", "report-exchange", "report.generated")
+                 ("order-processing-queue", "order-exchange", "order.updated"),
+                  ("order-processing-queue", "order-exchange", "order.deleted"),
             };
 
             foreach (var (queueName, exchangeName, routingKey) in queues)
@@ -56,11 +56,36 @@ namespace CqrsDemo.Infrastructure.Messaging
                         throw new Exception("Invalid message received");
                     }
 
-                    var cachedOrder = await _redisCache.GetAsync<Order>($"order:{order.Id}");
-                    if (cachedOrder == null)
+                    if(routingKey == "order.created")
                     {
                         await _redisCache.SetAsync($"order:{order.Id}", order);
                     }
+                    else if (routingKey == "order.updated")
+                    {
+                        var cachedOrder = await _redisCache.GetAsync<Order>($"order:{order.Id}");
+                        if (cachedOrder == null)
+                        {
+                            throw new Exception("Order not found in cache");
+                        }
+                        cachedOrder.Update(order.Name, order.Price);
+                        await _redisCache.SetAsync($"order:{order.Id}", cachedOrder);
+
+                    }
+                    else if (routingKey == "order.deleted")
+                    {
+                        var cachedOrder = await _redisCache.GetAsync<Order>($"order:{order.Id}");
+                        if (cachedOrder == null)
+                        {
+                            throw new Exception("Order not found in cache");
+                        } 
+                        await _redisCache.DeleteAsync($"order:{order.Id}");
+
+                    }
+                    else
+                    {
+                        throw new Exception("Invalid routing key");
+                    }
+                   
 
 
                     await Task.CompletedTask; // Simulate async processing

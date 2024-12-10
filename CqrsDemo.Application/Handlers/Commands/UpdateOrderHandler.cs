@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CqrsDemo.Application.Commands;
 using CqrsDemo.Application.DTOs;
+using CqrsDemo.Application.Services;
 using CqrsDemo.Domain.Entities;
 using CqrsDemo.Infrastructure.Persistence;
 using MediatR;
@@ -12,11 +13,13 @@ namespace CqrsDemo.Application.Handlers.Commands
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
 
-        public UpdateOrderHandler(AppDbContext context, IMapper mapper)
+        public UpdateOrderHandler(AppDbContext context, IMapper mapper, IRabbitMQPublisher rabbitMQPublisher)
         {
             _context = context;
             _mapper = mapper;
+            this._rabbitMQPublisher = rabbitMQPublisher;
         }
 
         public async Task<OrderDTO> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
@@ -26,6 +29,13 @@ namespace CqrsDemo.Application.Handlers.Commands
 
             order.Update(request.Name, request.Price);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Publish the update event to RabbitMQ
+            await _rabbitMQPublisher.PublishAsync(
+                exchangeName: "order-exchange",
+                routingKey: "order.updated",
+                message: order
+            );
 
             return _mapper.Map<OrderDTO>(order);
         }
