@@ -23,6 +23,7 @@ namespace CqrsDemo.Application.Handlers.Commands
         {
             _context = context;
             _mapper = mapper;
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
 
         public async Task<OrderDTO> Handle(CreateOrderCommand request, CancellationToken cancellationToken)

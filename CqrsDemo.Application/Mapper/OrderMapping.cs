@@ -14,7 +14,7 @@ namespace CqrsDemo.Application.Mapper
         public OrderMapping()
         {
             // Map Order -> OrderDTO
-            CreateMap<Order, OrderDTO>();
+            CreateMap<Order, OrderDTO>().ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id)); ;
 
         }
     }
