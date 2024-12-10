@@ -6,19 +6,22 @@ This project demonstrates CQRS (Command Query Responsibility Segregation) and Do
 
 ## Features
 
-1. Separation of commands (write) and queries (read) using CQRS.
-2. Domain-Driven Design (DDD) for business logic encapsulation.
-3. Swagger/OpenAPI for API documentation and testing.
-4. EF Core with an in-memory database for simplicity.
-5. Dockerized deployment.
+- CQRS Architecture: Clear separation of commands (write operations) and queries (read operations).
+- Domain-Driven Design (DDD): Encapsulation of business logic within the domain layer.
+- Event-Driven Architecture: Integration with RabbitMQ for event publishing and subscribing.
+- Caching: Redis caching for improved read performance and scalability.
+- API Documentation: Swagger/OpenAPI support for API exploration and testing.
+- EF Core with In-Memory Database: Simplified setup for demonstration and testing.
+- Dockerized Deployment: Ready-to-use Docker containers for quick deployment.
 
 ---
 
 ## Prerequisites
 
-1. .NET 9 SDK
-2. Docker Desktop
-3. A code editor like Visual Studio or Visual Studio Code
+- .NET 9 SDK
+- Docker Desktop
+- A code editor like Visual Studio or Visual Studio Code
+- RabbitMQ and Redis (can be run via Docker)
 
 ---
 
@@ -56,11 +59,4 @@ This project demonstrates CQRS (Command Query Responsibility Segregation) and Do
 
 ## Deployment with Docker
 
-1. Build the image:
-   docker build -t cqrsdemoapi:dev .
-
-2. Run the container:
-   docker run -p 8080:80 cqrsdemoapi:dev
-
-3. Access Swagger UI:
-   http://localhost:8080/swagger
+docker-compose up
