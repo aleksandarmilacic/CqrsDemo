@@ -25,26 +25,6 @@ This project demonstrates CQRS (Command Query Responsibility Segregation) and Do
 
 ---
 
-## Installation and Setup
-
-1. Clone the repository:
-   git clone https://github.com/aleksandarmilacic/CqrsDemo.git
-   cd cqrs-demo-api
-
-2. Build and run locally:
-
-   Using .NET CLI:
-   - dotnet restore
-   - dotnet build
-   - dotnet run --project CqrsDemo.Api
-   - Swagger UI available at: http://localhost:5000/swagger
-
-   Using Docker:
-   - docker build -t cqrsdemoapi:dev .
-   - docker run -p 8080:80 cqrsdemoapi:dev
-   - Swagger UI available at: http://localhost:8080/swagger
-
----
 
 ## API Endpoints
 
