@@ -3,7 +3,7 @@ using CqrsDemo.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CqrsDemo.Application.Handlers
+namespace CqrsDemo.Application.Handlers.Commands
 {
     public class DeleteOrderHandler : IRequestHandler<DeleteOrderCommand, Unit>
     {
@@ -21,7 +21,7 @@ namespace CqrsDemo.Application.Handlers
             {
                 return Unit.Value; // Return Unit.Value when no action is performed
             }
-            
+
             // in reality this would be a soft delete
             _context.Orders.Remove(order);
 

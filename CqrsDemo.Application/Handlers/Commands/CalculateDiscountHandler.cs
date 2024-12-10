@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CqrsDemo.Application.Handlers
+namespace CqrsDemo.Application.Handlers.Commands
 {
     public class CalculateDiscountHandler : IRequestHandler<CalculateDiscountCommand, decimal>
     {
@@ -15,7 +15,7 @@ namespace CqrsDemo.Application.Handlers
 
         public CalculateDiscountHandler(AppDbContext context)
         {
-            this._context = context;
+            _context = context;
         }
         public Task<decimal> Handle(CalculateDiscountCommand request, CancellationToken cancellationToken)
         {

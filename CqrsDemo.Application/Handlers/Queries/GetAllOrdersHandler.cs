@@ -6,7 +6,7 @@ using CqrsDemo.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CqrsDemo.Application.Handlers
+namespace CqrsDemo.Application.Handlers.Queries
 {
     public class GetAllOrdersHandler : IRequestHandler<GetAllOrdersQuery, IEnumerable<OrderDTO>>
     {
@@ -15,7 +15,7 @@ namespace CqrsDemo.Application.Handlers
         public GetAllOrdersHandler(AppDbContext context, IMapper mapper)
         {
             _context = context;
-            _mapper = mapper; 
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<OrderDTO>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)

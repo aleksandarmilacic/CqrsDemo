@@ -6,7 +6,7 @@ using CqrsDemo.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CqrsDemo.Application.Handlers
+namespace CqrsDemo.Application.Handlers.Commands
 {
     public class UpdateOrderHandler : IRequestHandler<UpdateOrderCommand, OrderDTO>
     {
@@ -16,7 +16,7 @@ namespace CqrsDemo.Application.Handlers
         public UpdateOrderHandler(AppDbContext context, IMapper mapper)
         {
             _context = context;
-            _mapper = mapper; 
+            _mapper = mapper;
         }
 
         public async Task<OrderDTO> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
