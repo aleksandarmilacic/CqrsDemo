@@ -13,6 +13,7 @@ This project demonstrates CQRS (Command Query Responsibility Segregation) and Do
 - API Documentation: Swagger/OpenAPI support for API exploration and testing.
 - EF Core with In-Memory Database: Simplified setup for demonstration and testing.
 - Dockerized Deployment: Ready-to-use Docker containers for quick deployment.
+- Polly for Resilience: Retry and circuit breaker policies for fault tolerance.
 
 ---
 
