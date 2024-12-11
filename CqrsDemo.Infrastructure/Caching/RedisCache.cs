@@ -36,8 +36,7 @@ namespace CqrsDemo.Infrastructure.Caching
         public async Task<bool> DeleteAsync(string key)
         {
             var db = _redis.GetDatabase();
-            var serializedValue = await db.StringGetAsync(key);
-            return 0 == await db.ListRemoveAsync(key, serializedValue, 0); 
+            return await db.KeyDeleteAsync(key);
         }
 
 
@@ -63,6 +62,20 @@ namespace CqrsDemo.Infrastructure.Caching
             }
 
             return result;
+        }
+
+        public async Task<IEnumerable<string>> GetAllKeysAsync(string pattern = "*")
+        {
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+            var keys = server.Keys(pattern: pattern);
+            return await Task.FromResult(keys.Select(k => k.ToString()).ToList());
+        }
+
+        public async Task DeleteBatchAsync(IEnumerable<string> keys)
+        {
+            var db = _redis.GetDatabase();
+            var tasks = keys.Select(key => db.KeyDeleteAsync(key));
+            await Task.WhenAll(tasks);
         }
     }
 }
