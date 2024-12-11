@@ -1,4 +1,6 @@
-﻿using RabbitMQ.Client;
+﻿using Polly;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 using System;
 
 namespace CqrsDemo.Infrastructure.Messaging
@@ -8,6 +10,7 @@ namespace CqrsDemo.Infrastructure.Messaging
         private readonly ConnectionFactory _factory;
         private IConnection? _connection;
         private IChannel? _channel;
+        private AsyncPolicy _retryPolicy;
 
         public RabbitMQConnectionManager()
         {
@@ -17,15 +20,28 @@ namespace CqrsDemo.Infrastructure.Messaging
                 UserName = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest",
                 Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest"
             };
+
+            _retryPolicy = Policy
+               .Handle<BrokerUnreachableException>()
+               .WaitAndRetryAsync(
+                   retryCount: 5,
+                   sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
+                   onRetry: (exception, timeSpan, retryCount, context) =>
+                   {
+                       Console.WriteLine($"🔄 RabbitMQ Connection Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to: {exception.Message}");
+                   });
         }
 
         public async Task<IConnection> GetConnectionAsync()
         {
-            if (_connection == null || !_connection.IsOpen)
+            return await _retryPolicy.ExecuteAsync(async () =>
             {
-                _connection = await _factory.CreateConnectionAsync();
-            }
-            return _connection;
+                if (_connection == null || !_connection.IsOpen)
+                {
+                    _connection = await _factory.CreateConnectionAsync();
+                }
+                return _connection;
+            });
         }
 
         public async Task<IChannel> GetChannelAsync()

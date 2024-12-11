@@ -7,8 +7,8 @@ namespace CqrsDemo.Domain.Entities
         public Guid Id { get; set; }
         public string Name { get; private set; }
         public decimal Price { get; private set; }
-        public DateTime CreatedDate { get; private set; }
-        public DateTime ModifiedDate { get; private set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
 
         private Order() { }
 
