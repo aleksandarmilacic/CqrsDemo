@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CqrsDemo.Infrastructure.Repository
 {
-    public class WriteRepository<T> : IRepository<T> where T : class
+    public class WriteRepository<T> : IWriteRepository<T> where T : class
     {
         private readonly WriteDbContext _dbContext;
 

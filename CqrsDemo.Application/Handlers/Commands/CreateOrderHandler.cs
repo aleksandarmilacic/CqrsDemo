@@ -15,27 +15,20 @@ namespace CqrsDemo.Application.Handlers.Commands
 {
     public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, OrderDTO>
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly IRabbitMQPublisher _rabbitMQPublisher;
+        private readonly OrderService _orderService;
+        private readonly IMapper _mapper; 
 
-        public CreateOrderHandler(AppDbContext context, IMapper mapper, IRabbitMQPublisher rabbitMQPublisher)
+        public CreateOrderHandler(OrderService orderService, IMapper mapper)
         {
-            _context = context;
-            _mapper = mapper;
-            _rabbitMQPublisher = rabbitMQPublisher;
+            _orderService = orderService;
+            _mapper = mapper; 
         }
 
         public async Task<OrderDTO> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = new Order(request.Name, request.Price);
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync(cancellationToken);
+            var order = new Order(request.Name, request.Price); 
 
-
-            // Publish event to RabbitMQ
-            await _rabbitMQPublisher.PublishAsync("order-exchange", "order.created", order);
-
+            await _orderService.CreateOrderAsync(order);
 
             return _mapper.Map<OrderDTO>(order);
         }

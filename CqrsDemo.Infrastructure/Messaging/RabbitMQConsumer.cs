@@ -9,19 +9,20 @@ using CqrsDemo.Infrastructure.Caching;
 using CqrsDemo.Domain.Entities;
 using Polly;
 using Polly.Retry;
+using CqrsDemo.Infrastructure.Persistence;
 
 namespace CqrsDemo.Infrastructure.Messaging
 {
     public class RabbitMQConsumerService : BackgroundService, IAsyncDisposable
     {
         private readonly RabbitMQConnectionManager _connectionManager;
-        private readonly RedisCache _redisCache;
+        private readonly ReadDbContext _readDbContext;
         private readonly AsyncRetryPolicy _retryPolicy;
 
-        public RabbitMQConsumerService(RabbitMQConnectionManager connectionManager, RedisCache redisCache)
+        public RabbitMQConsumerService(RabbitMQConnectionManager connectionManager, ReadDbContext readDbContext)
         {
             _connectionManager = connectionManager;
-            _redisCache = redisCache;
+            _readDbContext = readDbContext;
             _retryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(
@@ -72,27 +73,29 @@ namespace CqrsDemo.Infrastructure.Messaging
                             switch (ea.RoutingKey)
                             {
                                 case "order.created":
-                                    await _redisCache.SetAsync($"order:{order.Id}", order);
+                                    _readDbContext.Add(order);
+                                    await _readDbContext.SaveChangesAsync();
                                     break;
                                 case "order.updated":
-                                    var cachedOrder = await _redisCache.GetAsync<Order>($"order:{order.Id}");
+                                    var cachedOrder = await _readDbContext.FindAsync<Order>(order.Id);
                                     if (cachedOrder == null)
                                     {
-                                        throw new Exception("Order not found in cache");
+                                        throw new Exception("Order not found");
                                     }
-                                    cachedOrder.Update(order.Name, order.Price);
-                                    await _redisCache.SetAsync($"order:{order.Id}", cachedOrder);
+                                    cachedOrder.UpdateWithModifiedDate(order.Name, order.Price, order.ModifiedDate);
+                                    await _readDbContext.SaveChangesAsync();
                                     break;
                                 case "order.deleted":
-                                    var cachedOrderToDelete = await _redisCache.GetAsync<Order>($"order:{order.Id}");
+                                    var cachedOrderToDelete = await _readDbContext.FindAsync<Order>(order.Id);
                                     if (cachedOrderToDelete == null)
                                     {
-                                        throw new Exception("Order not found in cache");
+                                        throw new Exception("Order not found");
                                     }
-                                    await _redisCache.DeleteAsync($"order:{order.Id}");
+                                    _readDbContext.Remove(order.Id);
+                                    await _readDbContext.SaveChangesAsync();
                                     break;
                                 default:
-                                    throw new Exception("Invalid routing key");
+                                    throw new Exception("Invalid key");
                             }
 
                             await Task.CompletedTask; // Simulate async processing

@@ -9,12 +9,15 @@ using CqrsDemo.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure WriteDbContext for MSSQL (In-Memory for testing)
 builder.Services.AddDbContext<WriteDbContext>(options =>
-    options.UseInMemoryDatabase("OrderDb"));
+    options.UseInMemoryDatabase("WriteInMemoryOrder"));
 
-// Register ReadDbContext that uses postgresql
+// Configure ReadDbContext for PostgreSQL
 builder.Services.AddDbContext<ReadDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ReadDbContext")));
+ options.UseInMemoryDatabase("ReadInMemoryOrder"));
+//options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresReadDb")));
+
 
 // Register Redis cache as a singleton
 builder.Services.AddSingleton<RedisCache>();
@@ -28,9 +31,12 @@ builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 // Register RabbitMQConsumerService as a hosted service
 builder.Services.AddHostedService<RabbitMQConsumerService>();
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(WriteRepository<>));
-builder.Services.AddScoped(typeof(IRepository<>), typeof(ReadRepository<>));
 
+
+builder.Services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
+builder.Services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
+
+builder.Services.AddScoped<OrderService>();
 
 builder.Services.AddApplication();
 builder.Services.AddControllers();

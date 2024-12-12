@@ -12,58 +12,71 @@ namespace CqrsDemo.Application.Services
 {
     public class ReconciliationService
     {
-        private readonly AppDbContext _dbContext;
-        private readonly RedisCache _redisCache;
+        private readonly WriteDbContext _writeDbContext;
+        private readonly ReadDbContext _readDbContext;
 
-        public ReconciliationService(AppDbContext dbContext, RedisCache redisCache)
+        public ReconciliationService(WriteDbContext writeDbContext, ReadDbContext readDbContext)
         {
-            _dbContext = dbContext;
-            _redisCache = redisCache;
+           _writeDbContext = writeDbContext;
+           _readDbContext = readDbContext;
         }
 
         /// <summary>
-        /// Reconcile the Command Store (SQL) with the Read Store (Redis) for changes since a specific time.
-        /// Ensures Redis contains all the latest records from SQL and deletes stale records.
+        /// Reconcile the Write Store (MSSQL) with the Read Store (PostgreSQL).
         /// </summary>
         /// <param name="takeSince">The DateTime to sync changes from.</param>
         public async Task ReconcileAsync(DateTime takeSince)
         {
             try
             {
-                // Step 1: Get all orders from the SQL command store that changed since `takeSince`
-                var commandStoreOrders = await _dbContext.Orders
+                // Step 1: Get all orders from the Write DB that changed since `takeSince`
+                var commandStoreOrders = await _writeDbContext.Orders
                     .AsNoTracking()
                     .Where(o => o.CreatedDate >= takeSince || o.ModifiedDate >= takeSince)
                     .ToListAsync();
 
-                var commandStoreOrderIds = commandStoreOrders.Select(o => o.Id.ToString()).ToList();
-
-                // Step 2: Get all keys from the Redis cache that match "order:*"
-                var redisKeys = await _redisCache.GetAllKeysAsync("order:*");
-                var redisOrderIds = redisKeys.Select(key => key.Replace("order:", "")).ToList();
+                // Step 2: Get all orders from the Read DB
+                var readStoreOrders = await _readDbContext.Orders.AsNoTracking().ToListAsync();
+                var readStoreOrderIds = readStoreOrders.Select(o => o.Id).ToList();
 
                 // Step 3: Handle **new and updated** records
-                var updatedOrders = commandStoreOrders.Where(o => !redisOrderIds.Contains(o.Id.ToString())).ToList();
+                var updatedOrders = commandStoreOrders
+                    .Where(order => !readStoreOrderIds.Contains(order.Id) ||
+                                    readStoreOrders.Any(ro => ro.Id == order.Id && ro.ModifiedDate < order.ModifiedDate))
+                    .ToList();
 
                 if (updatedOrders.Any())
                 {
-                    var tasks = updatedOrders.Select(order =>
-                        _redisCache.SetAsync($"order:{order.Id}", order)
-                    );
-                    await Task.WhenAll(tasks);
-                    Console.WriteLine($"Total {updatedOrders.Count} new/updated orders synced to Redis.");
+                    foreach (var order in updatedOrders)
+                    {
+                        var existingOrder = await _readDbContext.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
+                        if (existingOrder != null)
+                        {
+                            // Update existing record
+                            existingOrder.UpdateWithModifiedDate(order.Name, order.Price, order.ModifiedDate);
+                        }
+                        else
+                        {
+                            // Add new record
+                            await _readDbContext.Orders.AddAsync(order);
+                        }
+                    }
+
+                    await _readDbContext.SaveChangesAsync();
+                    Console.WriteLine($"Total {updatedOrders.Count} new/updated orders synced to Read DB.");
                 }
 
                 // Step 4: Handle **deleted records**
-                var staleRedisKeys = redisOrderIds
-                    .Where(redisId => !commandStoreOrderIds.Contains(redisId))
-                    .Select(id => $"order:{id}")
+                var commandStoreOrderIds = commandStoreOrders.Select(o => o.Id).ToList();
+                var staleOrders = readStoreOrders
+                    .Where(readOrder => !commandStoreOrderIds.Contains(readOrder.Id))
                     .ToList();
 
-                if (staleRedisKeys.Any())
+                if (staleOrders.Any())
                 {
-                    await _redisCache.DeleteBatchAsync(staleRedisKeys);
-                    Console.WriteLine($"Total {staleRedisKeys.Count} stale records deleted from Redis.");
+                    _readDbContext.Orders.RemoveRange(staleOrders);
+                    await _readDbContext.SaveChangesAsync();
+                    Console.WriteLine($"Total {staleOrders.Count} stale records deleted from Read DB.");
                 }
 
                 Console.WriteLine("Reconciliation completed successfully");

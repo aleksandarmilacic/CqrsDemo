@@ -28,6 +28,13 @@ namespace CqrsDemo.Domain.Entities
             Price = price;
             ModifiedDate = DateTime.UtcNow;
         }
+
+        public void UpdateWithModifiedDate(string name, decimal price, DateTime modifiedDate)
+        {
+            Name = name;
+            Price = price;
+            ModifiedDate = modifiedDate;
+        }
     }
 }
 
