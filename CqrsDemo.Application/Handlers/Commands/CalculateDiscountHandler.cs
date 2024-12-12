@@ -11,9 +11,9 @@ namespace CqrsDemo.Application.Handlers.Commands
 {
     public class CalculateDiscountHandler : IRequestHandler<CalculateDiscountCommand, decimal>
     {
-        private readonly AppDbContext _context;
+        private readonly ReadDbContext _context;
 
-        public CalculateDiscountHandler(AppDbContext context)
+        public CalculateDiscountHandler(ReadDbContext context)
         {
             _context = context;
         }
