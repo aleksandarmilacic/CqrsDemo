@@ -47,6 +47,23 @@ namespace CqrsDemo.Infrastructure.Repository
             }
         }
 
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbContext.Set<T>().AddRangeAsync(entities);
+        }
+
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            _dbContext.Set<T>().UpdateRange(entities);
+        }
+
+        public async Task DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            var entities = await _dbContext.Set<T>().Where(e => ids.Contains(e.Id)).ToListAsync();
+            _dbContext.Set<T>().RemoveRange(entities);
+        }
+
         // Save changes explicitly
         public async Task SaveChangesAsync()
         {

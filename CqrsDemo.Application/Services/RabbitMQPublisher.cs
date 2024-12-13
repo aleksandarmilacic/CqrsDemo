@@ -46,13 +46,10 @@ namespace CqrsDemo.Application.Services
 
                 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
-                var basicProperties = new BasicProperties();
 
                 await channel.BasicPublishAsync(
                     exchange: exchangeName,
                     routingKey: routingKey,
-                    mandatory: false,
-                    basicProperties: basicProperties,
                     body: body
                 );
 

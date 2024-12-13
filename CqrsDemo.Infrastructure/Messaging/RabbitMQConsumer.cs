@@ -76,8 +76,7 @@ namespace CqrsDemo.Infrastructure.Messaging
                             switch (ea.RoutingKey)
                             {
                                 case "order.created":
-                                    readDbContext.Add(order);
-                                    await readDbContext.SaveChangesAsync();
+                                    readDbContext.Add(order); 
                                     break;
                                 case "order.updated":
                                     var cachedOrder = await readDbContext.FindAsync<Order>(order.Id);
@@ -85,8 +84,7 @@ namespace CqrsDemo.Infrastructure.Messaging
                                     {
                                         throw new Exception("Order not found");
                                     }
-                                    cachedOrder.UpdateWithModifiedDate(order.Name, order.Price, order.ModifiedDate);
-                                    await readDbContext.SaveChangesAsync();
+                                    cachedOrder.UpdateWithModifiedDate(order.Name, order.Price, order.ModifiedDate); 
                                     break;
                                 case "order.deleted":
                                     var cachedOrderToDelete = await readDbContext.FindAsync<Order>(order.Id);
@@ -94,14 +92,12 @@ namespace CqrsDemo.Infrastructure.Messaging
                                     {
                                         throw new Exception("Order not found");
                                     }
-                                    readDbContext.Remove(cachedOrderToDelete);
-                                    await readDbContext.SaveChangesAsync();
+                                    readDbContext.Remove(cachedOrderToDelete); 
                                     break;
                                 default:
                                     throw new Exception("Invalid key");
                             }
-
-                            await Task.CompletedTask; // Simulate async processing
+                            await readDbContext.SaveChangesAsync(); 
                         });
                     };
 
