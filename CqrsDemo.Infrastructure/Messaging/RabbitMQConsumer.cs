@@ -10,19 +10,20 @@ using CqrsDemo.Domain.Entities;
 using Polly;
 using Polly.Retry;
 using CqrsDemo.Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CqrsDemo.Infrastructure.Messaging
 {
     public class RabbitMQConsumerService : BackgroundService, IAsyncDisposable
     {
         private readonly RabbitMQConnectionManager _connectionManager;
-        private readonly ReadDbContext _readDbContext;
+        private readonly IServiceProvider _serviceProvider;
         private readonly AsyncRetryPolicy _retryPolicy;
 
-        public RabbitMQConsumerService(RabbitMQConnectionManager connectionManager, ReadDbContext readDbContext)
+        public RabbitMQConsumerService(RabbitMQConnectionManager connectionManager, IServiceProvider serviceProvider)
         {
             _connectionManager = connectionManager;
-            _readDbContext = readDbContext;
+            _serviceProvider = serviceProvider;
             _retryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetryAsync(
@@ -69,30 +70,32 @@ namespace CqrsDemo.Infrastructure.Messaging
                             {
                                 throw new Exception("Invalid message received");
                             }
+                            using var scope = _serviceProvider.CreateScope();
+                            var readDbContext = scope.ServiceProvider.GetRequiredService<ReadDbContext>();
 
                             switch (ea.RoutingKey)
                             {
                                 case "order.created":
-                                    _readDbContext.Add(order);
-                                    await _readDbContext.SaveChangesAsync();
+                                    readDbContext.Add(order);
+                                    await readDbContext.SaveChangesAsync();
                                     break;
                                 case "order.updated":
-                                    var cachedOrder = await _readDbContext.FindAsync<Order>(order.Id);
+                                    var cachedOrder = await readDbContext.FindAsync<Order>(order.Id);
                                     if (cachedOrder == null)
                                     {
                                         throw new Exception("Order not found");
                                     }
                                     cachedOrder.UpdateWithModifiedDate(order.Name, order.Price, order.ModifiedDate);
-                                    await _readDbContext.SaveChangesAsync();
+                                    await readDbContext.SaveChangesAsync();
                                     break;
                                 case "order.deleted":
-                                    var cachedOrderToDelete = await _readDbContext.FindAsync<Order>(order.Id);
+                                    var cachedOrderToDelete = await readDbContext.FindAsync<Order>(order.Id);
                                     if (cachedOrderToDelete == null)
                                     {
                                         throw new Exception("Order not found");
                                     }
-                                    _readDbContext.Remove(order.Id);
-                                    await _readDbContext.SaveChangesAsync();
+                                    readDbContext.Remove(cachedOrderToDelete);
+                                    await readDbContext.SaveChangesAsync();
                                     break;
                                 default:
                                     throw new Exception("Invalid key");

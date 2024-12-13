@@ -29,7 +29,8 @@ builder.Services.AddSingleton<RabbitMQConnectionManager>();
 builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
 // Register RabbitMQConsumerService as a hosted service
-builder.Services.AddHostedService<RabbitMQConsumerService>();
+builder.Services.AddHostedService(provider =>
+    ActivatorUtilities.CreateInstance<RabbitMQConsumerService>(provider));
 
 
 
