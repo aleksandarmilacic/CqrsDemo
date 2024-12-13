@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using CqrsDemo.Application.DTOs;
-using CqrsDemo.Domain.Entities;
+using CqrsDemo.Application.Models.DTOs.Order;
+using CqrsDemo.Domain.Entities.Order;
 using System;
 using System.Collections.Generic;
 using System.Linq;

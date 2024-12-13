@@ -6,6 +6,7 @@ namespace CqrsDemo.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            
             services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
             return services;

@@ -6,11 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Channels;
 using CqrsDemo.Infrastructure.Caching;
-using CqrsDemo.Domain.Entities;
 using Polly;
 using Polly.Retry;
 using CqrsDemo.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
+using CqrsDemo.Domain.Entities.Order;
 
 namespace CqrsDemo.Infrastructure.Messaging
 {

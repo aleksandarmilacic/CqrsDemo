@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CqrsDemo.Domain.Entities
+namespace CqrsDemo.Domain.Entities.Order
 {
     public class Order
     {
@@ -13,14 +13,14 @@ namespace CqrsDemo.Domain.Entities
         private Order() { }
 
         public Order(string name, decimal price)
-        { 
+        {
             Name = name;
             Price = price;
             CreatedDate = DateTime.UtcNow;
             ModifiedDate = DateTime.UtcNow;
         }
 
-  
+
 
         public void Update(string name, decimal price)
         {

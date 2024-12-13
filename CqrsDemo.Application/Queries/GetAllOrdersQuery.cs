@@ -1,4 +1,4 @@
-﻿using CqrsDemo.Application.DTOs;
+﻿using CqrsDemo.Application.Models.DTOs.Order;
 using CqrsDemo.Domain.Entities;
 using MediatR;
 

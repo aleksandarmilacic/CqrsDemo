@@ -1,4 +1,4 @@
-﻿using CqrsDemo.Domain.Entities;
+﻿using CqrsDemo.Domain.Entities.Order;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

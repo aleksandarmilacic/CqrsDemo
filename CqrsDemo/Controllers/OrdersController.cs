@@ -1,5 +1,6 @@
 using CqrsDemo.Application.Commands;
-using CqrsDemo.Application.DTOs;
+using CqrsDemo.Application.Commands.Order;
+using CqrsDemo.Application.Models.DTOs.Order;
 using CqrsDemo.Application.Queries;
 using CqrsDemo.Domain.Entities;
 using MediatR;
@@ -89,7 +90,7 @@ namespace CqrsDemo.Api.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _mediator.Send(new DeleteOrderCommand { Id = id });
+            await _mediator.Send(new DeleteOrderCommand(id));
             return NoContent();
         }
 
