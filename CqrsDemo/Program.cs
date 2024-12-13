@@ -48,13 +48,13 @@ builder.Services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>)
 
 builder.Services.AddScoped<OrderService>();
 
-builder.Services.Scan(scan => scan
-    .FromAssemblyOf<CreateOrderCommand>()
-    .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<,>))
-        .Where(type => !type.IsGenericTypeDefinition)) // Skip open generic types
-    .AsImplementedInterfaces()
-    .WithScopedLifetime()
-);
+//builder.Services.Scan(scan => scan
+//    .FromAssemblyOf<CreateOrderCommand>()
+//    .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<,>))
+//        .Where(type => !type.IsGenericTypeDefinition)) // Skip open generic types
+//    .AsImplementedInterfaces()
+//    .WithScopedLifetime()
+//);
 builder.Services.AddScoped<IRequestHandler<CreateOrderCommand, OrderDTO>, CreateOrderHandler>();
 builder.Services.AddScoped<IRequestHandler<UpdateOrderCommand, OrderDTO>, UpdateOrderHandler>();
 builder.Services.AddScoped<IRequestHandler<DeleteOrderCommand, Unit>, DeleteOrderHandler>();
