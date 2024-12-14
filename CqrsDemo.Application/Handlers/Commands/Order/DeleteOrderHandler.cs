@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CqrsDemo.Application.Handlers.Commands.Order
 {
-    public class DeleteOrderHandler : DeleteCommandHandler<Domain.Entities.Order.Order, OrderDTO>
+    public class DeleteOrderHandler : DeleteCommandHandler<Domain.Entities.Order.Order, OrderDTO>, IBaseHandler
     {
       
         public DeleteOrderHandler(OrderService orderService) : base(orderService)

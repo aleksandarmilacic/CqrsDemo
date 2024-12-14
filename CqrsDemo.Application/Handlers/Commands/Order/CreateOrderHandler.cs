@@ -14,7 +14,12 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Handlers.Commands.Order
 {
-    public class CreateOrderHandler : CreateCommandHandler<Domain.Entities.Order.Order, OrderDTO>
+    public interface IBaseHandler
+    {
+
+    }
+
+    public class CreateOrderHandler : CreateCommandHandler<Domain.Entities.Order.Order, OrderDTO>, IBaseHandler
     {
         public CreateOrderHandler(OrderService service) : base(service)
         {

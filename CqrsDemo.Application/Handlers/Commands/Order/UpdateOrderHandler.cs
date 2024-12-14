@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CqrsDemo.Application.Handlers.Commands.Order
 {
-    public class UpdateOrderHandler : UpdateCommandHandler<Domain.Entities.Order.Order, OrderDTO>
+    public class UpdateOrderHandler : UpdateCommandHandler<Domain.Entities.Order.Order, OrderDTO>, IBaseHandler
     {
        
         public UpdateOrderHandler(OrderService orderService) : base(orderService)

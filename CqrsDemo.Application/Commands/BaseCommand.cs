@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Commands
 {
-    public class CreateCommand<T, TDTO> : IRequest<TDTO> 
+    public abstract class CreateCommand<T, TDTO> : IRequest<TDTO> 
         where T : class 
         where TDTO : IDTO
     {
@@ -20,7 +20,7 @@ namespace CqrsDemo.Application.Commands
         }
     }
 
-    public class UpdateCommand<T, TDTO> : IRequest<TDTO>
+    public abstract class UpdateCommand<T, TDTO> : IRequest<TDTO>
         where T : class
         where TDTO : IDTO
     {
@@ -34,7 +34,7 @@ namespace CqrsDemo.Application.Commands
         }
     }
 
-    public class DeleteCommand<T> : IRequest<Unit>
+    public abstract class DeleteCommand<T> : IRequest<Unit>
     {
         public Guid Id { get; set; }
 

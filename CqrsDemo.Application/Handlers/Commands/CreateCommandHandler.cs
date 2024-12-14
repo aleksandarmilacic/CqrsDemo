@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Handlers.Commands
 {
-    public class CreateCommandHandler<T, TDTO> : IRequestHandler<CreateCommand<T, TDTO>, TDTO> 
+    public abstract class CreateCommandHandler<T, TDTO> : IRequestHandler<CreateCommand<T, TDTO>, TDTO> 
         where T : class
         where TDTO : IDTO
     {
@@ -29,7 +29,7 @@ namespace CqrsDemo.Application.Handlers.Commands
     }
 
 
-    public class UpdateCommandHandler<T, TDTO> : IRequestHandler<UpdateCommand<T, TDTO>, TDTO> 
+    public abstract class UpdateCommandHandler<T, TDTO> : IRequestHandler<UpdateCommand<T, TDTO>, TDTO> 
         where T : class
         where TDTO : IDTO
     {
@@ -46,7 +46,7 @@ namespace CqrsDemo.Application.Handlers.Commands
         }
     }
 
-    public class DeleteCommandHandler<T, TDTO> : IRequestHandler<DeleteCommand<T>, Unit>  
+    public abstract class DeleteCommandHandler<T, TDTO> : IRequestHandler<DeleteCommand<T>, Unit>  
         where T : class
         where TDTO : IDTO
     {
