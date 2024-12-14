@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CqrsDemo.Application.Commands.Order;
 using CqrsDemo.Application.Models.DTOs.Order;
 using CqrsDemo.Domain.Entities.Order;
 using System;
@@ -14,7 +15,11 @@ namespace CqrsDemo.Application.Mapper
         public OrderMapping()
         {
             // Map Order -> OrderDTO
-            CreateMap<Order, OrderDTO>().ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id)); ;
+            CreateMap<Order, OrderDTO>().ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+            CreateMap<CreateOrderCommand, Order>();
+            CreateMap<UpdateOrderCommand, Order>();
+            CreateMap<DeleteOrderCommand, Order>();
+
 
         }
     }

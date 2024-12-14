@@ -2,6 +2,7 @@
 using CqrsDemo.Application.Models.DTOs;
 using CqrsDemo.Domain.Entities;
 using CqrsDemo.Infrastructure.Repository;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 namespace CqrsDemo.Application.Services
 {
     public interface IGenericService<T, TDTO> 
-        where T : class
+        where T : IEntity<Guid> 
         where TDTO : IDTO
     {
         Task<TDTO> CreateAsync(T entity);
@@ -20,10 +21,11 @@ namespace CqrsDemo.Application.Services
         Task DeleteAsync(Guid id);
         Task<TDTO> GetByIdAsync(Guid id);
         Task<IEnumerable<TDTO>> GetAllAsync();
+        IQueryable<T> GetQuery();
     }
 
-    public class GenericService<T, TDTO> : IGenericService<T, TDTO> 
-        where T : class
+    public class GenericService<T, TDTO> : IGenericService<T, TDTO>
+        where T : IEntity<Guid>
         where TDTO : IDTO
     {
         private readonly IWriteRepository<T> _writeRepository;
@@ -82,10 +84,15 @@ namespace CqrsDemo.Application.Services
 
         public virtual async Task<IEnumerable<TDTO>> GetAllAsync()
         {
-            var query = _readRepository.GetAll();
+            var query = GetQuery();
             var list = await query.ToListAsync();
 
             return _mapper.Map<IEnumerable<TDTO>>(list);
+        }
+
+        public virtual IQueryable<T> GetQuery()
+        {
+            return _readRepository.GetAll();
         }
     }
 }

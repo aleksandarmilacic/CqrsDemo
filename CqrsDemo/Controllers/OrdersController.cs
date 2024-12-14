@@ -74,7 +74,6 @@ namespace CqrsDemo.Api.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOrderCommand command)
         {
-            command.Id = id;
             var updatedOrder = await _mediator.Send(command);
             if (updatedOrder == null) return NotFound();
             return Ok(updatedOrder);

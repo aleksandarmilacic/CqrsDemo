@@ -1,10 +1,11 @@
-﻿using CqrsDemo.Infrastructure.Persistence;
+﻿using CqrsDemo.Domain.Entities;
+using CqrsDemo.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace CqrsDemo.Infrastructure.Repository
 {
-    public class WriteRepository<T> : IWriteRepository<T> where T : class
+    public class WriteRepository<T> : IWriteRepository<T> where T : Entity<Guid>
     {
         private readonly WriteDbContext _dbContext;
 

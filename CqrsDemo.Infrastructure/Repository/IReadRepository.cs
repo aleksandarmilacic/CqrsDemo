@@ -1,6 +1,8 @@
-﻿namespace CqrsDemo.Infrastructure.Repository
+﻿using CqrsDemo.Domain.Entities;
+
+namespace CqrsDemo.Infrastructure.Repository
 {
-    public interface IReadRepository<T> where T : class
+    public interface IReadRepository<T> where T : IEntity<Guid>
     {
         void Add(T entity);
         void Delete(Guid id);

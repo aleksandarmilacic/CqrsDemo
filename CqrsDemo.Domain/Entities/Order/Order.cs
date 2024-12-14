@@ -2,9 +2,8 @@
 
 namespace CqrsDemo.Domain.Entities.Order
 {
-    public class Order
+    public class Order : Entity<Guid>
     {
-        public Guid Id { get; set; }
         public string Name { get; private set; }
         public decimal Price { get; private set; }
         public DateTime CreatedDate { get; set; }

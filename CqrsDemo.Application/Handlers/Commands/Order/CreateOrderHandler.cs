@@ -14,14 +14,11 @@ using System.Threading.Tasks;
 
 namespace CqrsDemo.Application.Handlers.Commands.Order
 {
-    public interface IBaseHandler
-    {
+  
 
-    }
-
-    public class CreateOrderHandler : CreateCommandHandler<Domain.Entities.Order.Order, OrderDTO>, IBaseHandler
+    public class CreateOrderHandler : CreateCommandHandler<CreateOrderCommand, Domain.Entities.Order.Order, OrderDTO>
     {
-        public CreateOrderHandler(OrderService service) : base(service)
+        public CreateOrderHandler(OrderService service, IMapper mapper) : base(service, mapper)
         {
             
         }

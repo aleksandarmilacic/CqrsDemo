@@ -18,6 +18,7 @@ using Autofac.Extensions.DependencyInjection;
 using CqrsDemo.Application.Models.DTOs;
 using CqrsDemo.Api.Helpers;
 using System.Reflection;
+using CqrsDemo.Domain.Entities;
 
 
 
@@ -71,7 +72,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
 
     // Usage in the containerBuilder
-    containerBuilder.RegisterAssemblyTypes(typeof(GenericService<object, CqrsDemo.Application.Models.DTOs.IDTO>).Assembly) // Scan the assembly where GenericService is located
+    containerBuilder.RegisterAssemblyTypes(typeof(GenericService<IEntity<Guid>, CqrsDemo.Application.Models.DTOs.IDTO>).Assembly) // Scan the assembly where GenericService is located
         .Where(t => t.IsAssignableToGenericType(typeof(GenericService<,>))) // Find all classes that inherit GenericService<T, TDTO>
         .AsSelf() // Register as self (so you can inject 'OrderService' directly)
         .InstancePerLifetimeScope(); // Scoped lifetime for services 
@@ -98,8 +99,6 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
     //       .As<IRequestHandler<DeleteOrderCommand, Unit>>()
     //       .InstancePerLifetimeScope();
 
-
-    containerBuilder.RegisterCommandHandlers(typeof(GenericService<object, CqrsDemo.Application.Models.DTOs.IDTO>).Assembly);
 
 
 });
