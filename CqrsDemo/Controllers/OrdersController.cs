@@ -1,5 +1,6 @@
 using CqrsDemo.Application.Commands;
-using CqrsDemo.Application.DTOs;
+using CqrsDemo.Application.Commands.Order;
+using CqrsDemo.Application.Models.DTOs.Order;
 using CqrsDemo.Application.Queries;
 using CqrsDemo.Domain.Entities;
 using MediatR;
@@ -73,7 +74,6 @@ namespace CqrsDemo.Api.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateOrderCommand command)
         {
-            command.Id = id;
             var updatedOrder = await _mediator.Send(command);
             if (updatedOrder == null) return NotFound();
             return Ok(updatedOrder);
@@ -89,7 +89,7 @@ namespace CqrsDemo.Api.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _mediator.Send(new DeleteOrderCommand { Id = id });
+            await _mediator.Send(new DeleteOrderCommand(id));
             return NoContent();
         }
 

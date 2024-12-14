@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CqrsDemo.Application.Handlers.Commands
+namespace CqrsDemo.Application.Handlers.Commands.Order
 {
     public class CalculateDiscountHandler : IRequestHandler<CalculateDiscountCommand, decimal>
     {

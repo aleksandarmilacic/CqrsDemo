@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace CqrsDemo.Domain.Entities
+namespace CqrsDemo.Domain.Entities.Order
 {
-    public class Order
+    public class Order : Entity<Guid>
     {
-        public Guid Id { get; set; }
         public string Name { get; private set; }
         public decimal Price { get; private set; }
         public DateTime CreatedDate { get; set; }
@@ -13,14 +12,14 @@ namespace CqrsDemo.Domain.Entities
         private Order() { }
 
         public Order(string name, decimal price)
-        { 
+        {
             Name = name;
             Price = price;
             CreatedDate = DateTime.UtcNow;
             ModifiedDate = DateTime.UtcNow;
         }
 
-  
+
 
         public void Update(string name, decimal price)
         {
