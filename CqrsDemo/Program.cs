@@ -17,6 +17,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using CqrsDemo.Application.Models.DTOs;
 using CqrsDemo.Api.Helpers;
+using System.Reflection;
 
 
 
@@ -64,6 +65,7 @@ builder.Services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>)
 //);
 
 builder.Services.AddApplication();
+  
 
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
@@ -84,32 +86,20 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
             .AsClosedTypesOf(typeof(IRequestHandler<,>))
             .InstancePerLifetimeScope();
 
-    containerBuilder.RegisterType<CreateOrderHandler>()
-           .As<IRequestHandler<CreateOrderCommand, OrderDTO>>()
-           .InstancePerLifetimeScope();
+    //containerBuilder.RegisterType<CreateOrderHandler>()
+    //       .As<IRequestHandler<CreateOrderCommand, OrderDTO>>()
+    //       .InstancePerLifetimeScope();
 
-    containerBuilder.RegisterType<UpdateOrderHandler>()
-           .As<IRequestHandler<UpdateOrderCommand, OrderDTO>>()
-           .InstancePerLifetimeScope();
+    //containerBuilder.RegisterType<UpdateOrderHandler>()
+    //       .As<IRequestHandler<UpdateOrderCommand, OrderDTO>>()
+    //       .InstancePerLifetimeScope();
 
-    containerBuilder.RegisterType<DeleteOrderHandler>()
-           .As<IRequestHandler<DeleteOrderCommand, Unit>>()
-           .InstancePerLifetimeScope();
-    //   containerBuilder.RegisterAssemblyTypes(typeof(CreateCommandHandler<,>).Assembly) // Scan the assembly where your handlers are located
-    //      .AssignableTo(typeof(CreateCommandHandler<,>)) // All types inheriting from CreateCommandHandler<T, TDTO>
-    //      .AsImplementedInterfaces() // Registers them as IRequestHandler<,>
-    //      .InstancePerLifetimeScope();
-    //
-    //   containerBuilder.RegisterAssemblyTypes(typeof(UpdateCommandHandler<,>).Assembly) // Scan the assembly where your handlers are located
-    //          .AssignableTo(typeof(UpdateCommandHandler<,>)) // All types inheriting from UpdateCommandHandler<T, TDTO>
-    //          .AsImplementedInterfaces() // Registers them as IRequestHandler<,>
-    //          .InstancePerLifetimeScope();
-    //
-    //   containerBuilder.RegisterAssemblyTypes(typeof(DeleteCommandHandler<,>).Assembly) // Scan the assembly where your handlers are located
-    //          .AssignableTo(typeof(DeleteCommandHandler<,>)) // All types inheriting from DeleteCommandHandler<T>
-    //          .AsImplementedInterfaces() // Registers them as IRequestHandler<,>
-    //          .InstancePerLifetimeScope();
+    //containerBuilder.RegisterType<DeleteOrderHandler>()
+    //       .As<IRequestHandler<DeleteOrderCommand, Unit>>()
+    //       .InstancePerLifetimeScope();
 
+
+    containerBuilder.RegisterCommandHandlers(typeof(GenericService<object, CqrsDemo.Application.Models.DTOs.IDTO>).Assembly);
 
 
 });
@@ -128,7 +118,31 @@ builder.Services.AddAutoMapper(typeof(OrderMapping));
 
 
 var app = builder.Build();
+// Check registrations
+using (var scope = app.Services.CreateScope())
+{
+    var provider = scope.ServiceProvider;
+    var lifetimeScope = provider.GetService<ILifetimeScope>();
 
+    var requiredHandlers = new List<Type>
+    {
+        typeof(IRequestHandler<CreateOrderCommand, OrderDTO>),
+        typeof(IRequestHandler<UpdateOrderCommand, OrderDTO>),
+        typeof(IRequestHandler<DeleteOrderCommand, Unit>)
+    };
+
+    foreach (var handlerType in requiredHandlers)
+    {
+        if (lifetimeScope.TryResolve(handlerType, out _))
+        {
+            Console.WriteLine($"Handler {handlerType.Name} is registered.");
+        }
+        else
+        {
+            Console.WriteLine($"Handler {handlerType.Name} is NOT registered.");
+        }
+    }
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
