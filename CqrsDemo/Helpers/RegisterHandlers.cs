@@ -1,9 +1,6 @@
 ﻿using Autofac;
 using CqrsDemo.Application.Commands;
-using CqrsDemo.Application.Commands.Order;
 using CqrsDemo.Application.Handlers.Commands;
-using CqrsDemo.Application.Handlers.Commands.Order;
-using CqrsDemo.Application.Models.DTOs.Order;
 using MediatR;
 using System.Reflection;
 
@@ -11,15 +8,16 @@ namespace CqrsDemo.Api.Helpers
 {
     public static class RegisterHandlers
     {
+        // Single source of truth for Handler <-> Command mapping
+        private static readonly Dictionary<Type, Type> HandlerCommandMappings = new()
+        {
+            { typeof(CreateCommandHandler<,>), typeof(CreateCommand<,>) },
+            { typeof(UpdateCommandHandler<,>), typeof(UpdateCommand<,>) },
+            { typeof(DeleteCommandHandler<,>), typeof(DeleteCommand<>) }
+        };
+
         public static void RegisterCommandHandlers(this ContainerBuilder containerBuilder, Assembly assembly)
         {
-            var handlerBaseTypes = new[]
-            {
-        typeof(CreateCommandHandler<,>),
-        typeof(UpdateCommandHandler<,>),
-        typeof(DeleteCommandHandler<,>)
-    };
-
             var handlerTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract) // Only concrete classes
                 .Where(t => GetGenericBaseType(t) != null) // Only types with one of the desired base types
@@ -33,62 +31,26 @@ namespace CqrsDemo.Api.Helpers
                     if (baseType == null) continue;
 
                     var genericArguments = baseType.GetGenericArguments();
-                    if (genericArguments.Length == 2)
+                    if (genericArguments.Length != 2) continue;
+
+                    var entityType = genericArguments[0];
+                    var dtoType = genericArguments[1];
+
+                    var commandType = GetDerivedCommandType(assembly, baseType, entityType, dtoType);
+
+                    if (baseType.GetGenericTypeDefinition() == typeof(DeleteCommandHandler<,>))
                     {
-                        var entityType = genericArguments[0];
-                        var dtoType = genericArguments[1];
+                        dtoType = typeof(Unit);
+                    }
 
-                        // 1. Get the *actual* command type, not just the base type
-                        Type commandType = null;
-                        if (baseType.GetGenericTypeDefinition() == typeof(CreateCommandHandler<,>))
-                        {
-                            commandType = assembly.GetTypes()
-                                .FirstOrDefault(t =>
-                                    t.IsClass &&
-                                    !t.IsAbstract &&
-                                    t.BaseType != null &&
-                                    t.BaseType.IsGenericType &&
-                                    t.BaseType.GetGenericTypeDefinition() == typeof(CreateCommand<,>) &&
-                                    t.BaseType.GetGenericArguments()[0] == entityType &&
-                                    t.BaseType.GetGenericArguments()[1] == dtoType
-                                );
-                        }
-                        else if (baseType.GetGenericTypeDefinition() == typeof(UpdateCommandHandler<,>))
-                        {
-                            commandType = assembly.GetTypes()
-                                .FirstOrDefault(t =>
-                                    t.IsClass &&
-                                    !t.IsAbstract &&
-                                    t.BaseType != null &&
-                                    t.BaseType.IsGenericType &&
-                                    t.BaseType.GetGenericTypeDefinition() == typeof(UpdateCommand<,>) &&
-                                    t.BaseType.GetGenericArguments()[0] == entityType &&
-                                    t.BaseType.GetGenericArguments()[1] == dtoType
-                                );
-                        }
-                        else if (baseType.GetGenericTypeDefinition() == typeof(DeleteCommandHandler<,>))
-                        {
-                            commandType = assembly.GetTypes()
-                                .FirstOrDefault(t =>
-                                    t.IsClass &&
-                                    !t.IsAbstract &&
-                                    t.BaseType != null &&
-                                    t.BaseType.IsGenericType &&
-                                    t.BaseType.GetGenericTypeDefinition() == typeof(DeleteCommand<>) &&
-                                    t.BaseType.GetGenericArguments()[0] == entityType
-                                );
-                            dtoType = typeof(Unit); // Delete handlers typically return Unit
-                        }
+                    if (commandType != null)
+                    {
+                        var requestHandlerInterface = typeof(IRequestHandler<,>).MakeGenericType(commandType, dtoType);
+                        containerBuilder.RegisterType(handlerType)
+                            .As(requestHandlerInterface)
+                            .InstancePerLifetimeScope();
 
-                        if (commandType != null)
-                        {
-                            var requestHandlerInterface = typeof(IRequestHandler<,>).MakeGenericType(commandType, dtoType);
-                            containerBuilder.RegisterType(handlerType)
-                                .As(requestHandlerInterface)
-                                .InstancePerLifetimeScope();
-
-                            Console.WriteLine($"Registered {handlerType.Name} for {commandType.Name} and {dtoType.Name}");
-                        }
+                        Console.WriteLine($"Registered {handlerType.Name} for {commandType.Name} and {dtoType.Name}");
                     }
                 }
                 catch (Exception ex)
@@ -98,15 +60,43 @@ namespace CqrsDemo.Api.Helpers
             }
         }
 
-        // Helper method to get the base type
-        public static Type GetGenericBaseType(Type type)
+        // Dynamically resolve the command type using the handler's base type
+        private static Type GetDerivedCommandType(Assembly assembly, Type handlerBaseType, Type entityType, Type dtoType)
+        {
+            if (!HandlerCommandMappings.TryGetValue(handlerBaseType.GetGenericTypeDefinition(), out var commandBaseType))
+                return null;
+
+            // Special handling for DeleteCommand which only has one generic argument
+            if (commandBaseType == typeof(DeleteCommand<>))
+            {
+                return assembly.GetTypes()
+                    .FirstOrDefault(t =>
+                        t.IsClass &&
+                        !t.IsAbstract &&
+                        t.BaseType != null &&
+                        t.BaseType.IsGenericType &&
+                        t.BaseType.GetGenericTypeDefinition() == commandBaseType &&
+                        t.BaseType.GetGenericArguments().SequenceEqual(new[] { entityType })
+                    );
+            }
+
+            // Handling for CreateCommand and UpdateCommand which have two generic arguments
+            return assembly.GetTypes()
+                .FirstOrDefault(t =>
+                    t.IsClass &&
+                    !t.IsAbstract &&
+                    t.BaseType != null &&
+                    t.BaseType.IsGenericType &&
+                    t.BaseType.GetGenericTypeDefinition() == commandBaseType &&
+                    t.BaseType.GetGenericArguments().SequenceEqual(new[] { entityType, dtoType })
+                );
+        }
+
+        private static Type GetGenericBaseType(Type type)
         {
             while (type != null && type != typeof(object))
             {
-                if (type.IsGenericType && (
-                    type.GetGenericTypeDefinition() == typeof(CreateCommandHandler<,>) ||
-                    type.GetGenericTypeDefinition() == typeof(UpdateCommandHandler<,>) ||
-                    type.GetGenericTypeDefinition() == typeof(DeleteCommandHandler<,>)))
+                if (type.IsGenericType && HandlerCommandMappings.ContainsKey(type.GetGenericTypeDefinition()))
                 {
                     return type;
                 }
