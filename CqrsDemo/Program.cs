@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using CqrsDemo.Infrastructure.Persistence;
 using CqrsDemo.Application;
 using CqrsDemo.Application.Mapper;
@@ -13,6 +13,8 @@ using CqrsDemo.Application.Commands.Order;
 using MediatR;
 using CqrsDemo.Application.Commands;
 using CqrsDemo.Application.Handlers.Commands.Order;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,20 +48,40 @@ builder.Services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
 
 builder.Services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
 
-builder.Services.AddScoped<OrderService>();
-
+//builder.Services.AddScoped<OrderService>();
 //builder.Services.Scan(scan => scan
-//    .FromAssemblyOf<CreateOrderCommand>()
-//    .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<,>))
-//        .Where(type => !type.IsGenericTypeDefinition)) // Skip open generic types
-//    .AsImplementedInterfaces()
-//    .WithScopedLifetime()
+//    .FromAssemblyOf<GenericService<object, CqrsDemo.Application.Models.DTOs.IDTO>>() // Scan the assembly where GenericService is located
+//    .AddClasses(classes => classes.AssignableTo(typeof(GenericService<,>))) // Find all classes that inherit GenericService<T, TDTO>
+//    .AsSelf() // Register as self (so you can inject 'OrderService' directly)
+//    .WithScopedLifetime() // Scoped lifetime for services
 //);
-builder.Services.AddScoped<IRequestHandler<CreateOrderCommand, OrderDTO>, CreateOrderHandler>();
-builder.Services.AddScoped<IRequestHandler<UpdateOrderCommand, OrderDTO>, UpdateOrderHandler>();
-builder.Services.AddScoped<IRequestHandler<DeleteOrderCommand, Unit>, DeleteOrderHandler>();
 
 builder.Services.AddApplication();
+
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+
+    containerBuilder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>)).InstancePerLifetimeScope();
+    containerBuilder.RegisterGeneric(typeof(ReadRepository<>)).As(typeof(IReadRepository<>)).InstancePerLifetimeScope();
+
+    containerBuilder.RegisterGeneric(typeof(GenericService<,>)).As(typeof(IGenericService<,>)).InstancePerLifetimeScope();
+
+    containerBuilder.RegisterAssemblyTypes(typeof(CreateOrderCommand).Assembly)
+        .AsClosedTypesOf(typeof(IRequestHandler<,>)) // Register only closed types
+        .AsImplementedInterfaces()
+        .InstancePerLifetimeScope();
+
+    containerBuilder.RegisterAssemblyTypes(typeof(CreateOrderCommand).Assembly)
+        .AsImplementedInterfaces()
+        .InstancePerLifetimeScope();
+});
+
+//builder.Services.AddScoped<IRequestHandler<CreateOrderCommand, OrderDTO>, CreateOrderHandler>();
+//builder.Services.AddScoped<IRequestHandler<UpdateOrderCommand, OrderDTO>, UpdateOrderHandler>();
+//builder.Services.AddScoped<IRequestHandler<DeleteOrderCommand, Unit>, DeleteOrderHandler>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

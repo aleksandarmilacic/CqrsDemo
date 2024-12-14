@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
+using CqrsDemo.Application.Handlers.Commands;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Reflection;
 
 namespace CqrsDemo.Application
 {
@@ -12,5 +17,7 @@ namespace CqrsDemo.Application
             return services;
 
         }
+
+       
     }
 }
