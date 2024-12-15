@@ -12,7 +12,10 @@ using Order = CqrsDemo.Domain.Entities.Order.Order;
 
 namespace CqrsDemo.Application.Services.OrderServices
 {
-    public class OrderService : GenericService<Order, OrderDTO>
+    public interface IOrderService : IGenericService<Order, OrderDTO>
+    {
+    }
+    public class OrderService : GenericService<Order, OrderDTO>, IOrderService
     {
         public OrderService(IWriteRepository<Order> writeRepository, 
             IReadRepository<Order> readRepository, 

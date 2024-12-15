@@ -78,6 +78,10 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
         .InstancePerLifetimeScope(); // Scoped lifetime for services 
                                      // Register all IRequestHandler implementations generically
 
+    // Explicit registration for IOrderService and OrderService
+    containerBuilder.RegisterType<OrderService>()
+        .As<IOrderService>()
+        .InstancePerLifetimeScope();
 
     //containerBuilder.AddMediatrHandlersWithOpenGeneric();
     containerBuilder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>)).InstancePerLifetimeScope();
@@ -117,31 +121,7 @@ builder.Services.AddAutoMapper(typeof(OrderMapping));
 
 
 var app = builder.Build();
-// Check registrations
-using (var scope = app.Services.CreateScope())
-{
-    var provider = scope.ServiceProvider;
-    var lifetimeScope = provider.GetService<ILifetimeScope>();
 
-    var requiredHandlers = new List<Type>
-    {
-        typeof(IRequestHandler<CreateOrderCommand, OrderDTO>),
-        typeof(IRequestHandler<UpdateOrderCommand, OrderDTO>),
-        typeof(IRequestHandler<DeleteOrderCommand, Unit>)
-    };
-
-    foreach (var handlerType in requiredHandlers)
-    {
-        if (lifetimeScope.TryResolve(handlerType, out _))
-        {
-            Console.WriteLine($"Handler {handlerType.Name} is registered.");
-        }
-        else
-        {
-            Console.WriteLine($"Handler {handlerType.Name} is NOT registered.");
-        }
-    }
-}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

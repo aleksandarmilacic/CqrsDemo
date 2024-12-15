@@ -32,6 +32,10 @@ namespace CqrsDemo.Application.Handlers.Commands
         {
             // Map properties from command to entity
             var entity = _mapper.Map<TEntity>(request);
+            
+            if (entity == null) 
+                throw new ArgumentNullException(nameof(entity), "Mapping not successful");
+
             return await _service.CreateAsync(entity);
         }
     }
