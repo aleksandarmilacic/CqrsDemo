@@ -18,7 +18,7 @@ namespace CqrsDemo.Application.Handlers.Commands.Order
 
     public class CreateOrderHandler : CreateCommandHandler<CreateOrderCommand, Domain.Entities.Order.Order, OrderDTO>
     {
-        public CreateOrderHandler(OrderService service, IMapper mapper) : base(service, mapper)
+        public CreateOrderHandler(IOrderService service, IMapper mapper) : base(service, mapper)
         {
             
         }

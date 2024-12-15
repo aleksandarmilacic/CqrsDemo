@@ -12,7 +12,7 @@ namespace CqrsDemo.Application.Handlers.Commands.Order
     public class UpdateOrderHandler : UpdateCommandHandler<UpdateOrderCommand, Domain.Entities.Order.Order, OrderDTO>
     {
        
-        public UpdateOrderHandler(OrderService orderService, IMapper mapper) : base(orderService, mapper)
+        public UpdateOrderHandler(IOrderService orderService, IMapper mapper) : base(orderService, mapper)
         { 
         }
  

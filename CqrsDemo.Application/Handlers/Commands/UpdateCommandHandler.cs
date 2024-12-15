@@ -21,9 +21,13 @@ namespace CqrsDemo.Application.Handlers.Commands
         }
 
         public async Task<TDTO> Handle(TCommand request, CancellationToken cancellationToken)
-        {
-            // Map updated properties from the command to the entity
+        { 
             var entity = _mapper.Map<TEntity>(request);
+            if (entity == null) 
+            {
+                throw new ArgumentNullException(nameof(entity), "Failed to map the request to an entity.");
+            }
+
             return await _service.UpdateAsync(request.Id, entity);
         }
     }

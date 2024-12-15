@@ -9,6 +9,8 @@ namespace CqrsDemo.Infrastructure.Repository
     {
         private readonly ReadDbContext _dbContext;
 
+        public ReadDbContext DbContext => _dbContext;
+
         public ReadRepository(ReadDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -18,6 +20,10 @@ namespace CqrsDemo.Infrastructure.Repository
         public IQueryable<T> GetById(Guid id)
         {
             return _dbContext.Set<T>().Where(e => EF.Property<Guid>(e, "Id") == id);
+        }
+        public IQueryable<T> GetByIdAsNoTracking(Guid id)
+        {
+            return _dbContext.Set<T>().Where(e => EF.Property<Guid>(e, "Id") == id).AsNoTracking();
         }
 
         // Get all entities (deferred execution)
