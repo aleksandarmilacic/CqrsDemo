@@ -8,6 +8,7 @@ namespace CqrsDemo.Infrastructure.Repository
     public class WriteRepository<T> : IWriteRepository<T> where T : Entity<Guid>
     {
         private readonly WriteDbContext _dbContext;
+        public WriteDbContext DbContext => _dbContext;
 
         public WriteRepository(WriteDbContext dbContext)
         {
@@ -18,6 +19,11 @@ namespace CqrsDemo.Infrastructure.Repository
         public IQueryable<T> GetById(Guid id)
         {
             return _dbContext.Set<T>().Where(e => EF.Property<Guid>(e, "Id") == id);
+        }
+
+        public IQueryable<T> GetByIdAsNoTracking(Guid id)
+        {
+            return _dbContext.Set<T>().Where(e => EF.Property<Guid>(e, "Id") == id).AsNoTracking();
         }
 
         // Get all entities

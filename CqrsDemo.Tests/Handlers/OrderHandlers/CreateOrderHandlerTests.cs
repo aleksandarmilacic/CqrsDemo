@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CqrsDemo.Application.Services.OrderServices;
 
-namespace CqrsDemo.Tests
+namespace CqrsDemo.Tests.Handlers.OrderHandlers
 {
     public class CreateOrderHandlerTests
     {

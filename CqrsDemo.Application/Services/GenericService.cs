@@ -49,50 +49,117 @@ namespace CqrsDemo.Application.Services
 
         public virtual async Task<TDTO> CreateAsync(T entity)
         {
-            _writeRepository.Add(entity);
-            await _writeRepository.SaveChangesAsync();
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity), "Entity cannot be null");
 
-            // Publish event to RabbitMQ
-            await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.created", entity);
+            try
+            {
+                _writeRepository.Add(entity);
+                await _writeRepository.SaveChangesAsync();
 
-            return _mapper.Map<TDTO>(entity);
+                // Publish event to RabbitMQ
+                await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.created", entity);
+
+                return _mapper.Map<TDTO>(entity);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error creating {typeof(T).Name}", ex);
+            }
         }
 
         public virtual async Task<TDTO> UpdateAsync(Guid id, T entity)
         {
-            _writeRepository.Update(entity);
-            await _writeRepository.SaveChangesAsync();
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity), "Entity cannot be null");
 
-            await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.updated", entity);
-            return _mapper.Map<TDTO>(entity);
+            try
+            {
+                var exists = await _writeRepository.GetAll().AnyAsync(a => a.Id == id);
+                if (!exists)
+                    throw new KeyNotFoundException($"Entity with ID {id} not found.");
+
+                _writeRepository.Update(entity);
+                await _writeRepository.SaveChangesAsync();
+
+                await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.updated", entity);
+
+                return _mapper.Map<TDTO>(entity);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error updating {typeof(T).Name} with ID {id}", ex);
+            }
         }
 
         public virtual async Task DeleteAsync(Guid id)
         {
-            _writeRepository.Delete(id);
-            await _writeRepository.SaveChangesAsync();
+            try
+            {
+                var exists = await _writeRepository.GetByIdAsNoTracking(id).AnyAsync();
+                if (!exists)
+                    throw new KeyNotFoundException($"Entity with ID {id} not found.");
 
-            await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.deleted", new { Id = id });
+                _writeRepository.Delete(id);
+                await _writeRepository.SaveChangesAsync();
+
+                await _rabbitMQPublisher.PublishAsync(_exchangeName, $"{typeof(T).Name.ToLower()}.deleted", new { Id = id });
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error deleting {typeof(T).Name} with ID {id}", ex);
+            }
         }
 
         public virtual async Task<TDTO> GetByIdAsync(Guid id)
         {
-            var query = _readRepository.GetById(id);
-            var entity = await query.SingleOrDefaultAsync();
-            return _mapper.Map<TDTO>(entity);
+            try
+            {
+                var query = _readRepository.GetByIdAsNoTracking(id);
+                var entity = await query.SingleOrDefaultAsync();
+
+                if (entity == null)
+                    throw new KeyNotFoundException($"Entity with ID {id} not found.");
+
+                return _mapper.Map<TDTO>(entity);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error fetching {typeof(T).Name} with ID {id}", ex);
+            }
         }
 
         public virtual async Task<IEnumerable<TDTO>> GetAllAsync()
         {
-            var query = GetQuery();
-            var list = await query.ToListAsync();
+            try
+            {
+                var query = GetQuery();
+                var list = await query.ToListAsync();
 
-            return _mapper.Map<IEnumerable<TDTO>>(list);
+                return _mapper.Map<IEnumerable<TDTO>>(list);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error fetching all {typeof(T).Name} entities", ex);
+            }
         }
 
         public virtual IQueryable<T> GetQuery()
         {
-            return _readRepository.GetAll();
+            try
+            {
+                return _readRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                throw new InvalidOperationException($"Error fetching queryable for {typeof(T).Name}", ex);
+            }
         }
     }
 }
