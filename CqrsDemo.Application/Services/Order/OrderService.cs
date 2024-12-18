@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using CqrsDemo.Application.Models.DTOs;
 using CqrsDemo.Application.Models.DTOs.Order;
 using CqrsDemo.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -18,10 +20,11 @@ namespace CqrsDemo.Application.Services.OrderServices
     public class OrderService : GenericService<Order, OrderDTO>, IOrderService
     {
         public OrderService(IWriteRepository<Order> writeRepository, 
-            IReadRepository<Order> readRepository, 
-            IRabbitMQPublisher rabbitMQPublisher, 
-            IMapper mapper) 
-            : base(writeRepository, readRepository, rabbitMQPublisher, mapper)
+            IReadRepository<Order> readRepository,
+        IRabbitMQPublisher rabbitMQPublisher, 
+            IMapper mapper,
+            ILogger<IGenericService<Order, OrderDTO>> logger) 
+            : base(writeRepository, readRepository, rabbitMQPublisher, mapper, logger)
         {
         } 
     }
