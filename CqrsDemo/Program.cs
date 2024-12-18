@@ -118,14 +118,23 @@ builder.Services.AddSwaggerGen();
 // Register Automapper
 builder.Services.AddAutoMapper(typeof(OrderMapping));
 
-
+// Adds logging to the dependency injection container
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 var app = builder.Build();
+
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    //app.UseDeveloperExceptionPage();
+    
 }
 
 app.UseRouting();
